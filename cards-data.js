@@ -1,5 +1,5 @@
 export default [
-  { href: './html/clash royale/index.html', imgSrc: 'clash royale.jpeg', name: 'Clash Royale (ripoff)' , 'page': 5, 'id': 945 },
+  { href: './html/Clash Royale/index.html', imgSrc: 'clash royale.jpeg', name: 'Clash Royale (ripoff)' , 'page': 5, 'id': 945 },
   { href: './html/sans fight/index.html', imgSrc: 'sans fight.png', name: 'Sans Fight' , 'page': 4, 'id': 944 },
   { href: './html/extreme off road cars/index.html', imgSrc: 'extreme off road cars.jpg', name: 'extreme off road cars' , 'page': 4, 'id': 941 },
   { href: './html/football legends/index.html', imgSrc: 'football legends.jpg', name: 'football legends' , 'page': 4, 'id': 946 },

@@ -1,5 +1,4 @@
 export default [
-{ href: './html/Steal a Brainrot/index.html', imgSrc: 'Steal a Brainrot.jpeg', name: 'Steal a Brainrot' , 'page': 5, 'id': 731 },
 { href: './html/Last Breath/index.html', imgSrc: 'Last Breath.jpeg', name: 'Last Breath' , 'page': 5, 'id': 720 },
 { href: './html/Happy Wheels/index.html', imgSrc: 'Happy Wheels.jpeg', name: 'Happy Wheels' , 'page': 5, 'id': 396 },
 { href: './html/Grow a Garden/index.html', imgSrc: 'Grow a Garden.jpeg', name: 'Grow a Garden' , 'page': 5, 'id': 250 },

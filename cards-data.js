@@ -1,4 +1,5 @@
 export default [
+  { href: './html/Steal a Brainrot/index.html', imgSrc: 'Steal a Brainrot.jpeg', name: 'Steal a Brainrot' , 'page': 5, 'id': 731 },
   { href: './html/clash royale/index.html', imgSrc: 'clash royale.jpeg', name: 'Clash Royale (ripoff)' , 'page': 5, 'id': 945 },
   { href: './html/Solar Smash/index.html', imgSrc: 'Solar Smash.jpeg', name: 'Solar Smash' , 'page': 5, 'id': 145 },
   { href: './html/sans fight/index.html', imgSrc: 'sans fight.png', name: 'Sans Fight' , 'page': 4, 'id': 944 },

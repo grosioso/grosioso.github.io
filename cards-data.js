@@ -1,4 +1,10 @@
 export default [
+  { href: './html/City Car Driving Stunt Master/index.html', imgSrc: 'City Car Driving Stunt Master.jpeg', name: 'City Car Driving Stunt Master' , 'page': 5, 'id': 155 },
+  { href: './html/Last Breath/index.html', imgSrc: 'Last Breath.jpeg', name: 'Last Breath' , 'page': 5, 'id': 720 },
+  { href: './html/Grow a Garden/index.html', imgSrc: 'Grow a Garden.jpeg', name: 'Grow a Garden' , 'page': 5, 'id': 250 },
+  { href: './html/Steal a Brainrot/index.html', imgSrc: 'Steal a Brainrot.jpeg', name: 'Steal a Brainrot' , 'page': 5, 'id': 731 },
+  { href: './html/clash royale/index.html', imgSrc: 'clash royale.jpeg', name: 'Clash Royale (ripoff)' , 'page': 5, 'id': 945 },
+  { href: './html/Solar Smash/index.html', imgSrc: 'Solar Smash.jpeg', name: 'Solar Smash' , 'page': 5, 'id': 145 },
   { href: './html/sans fight/index.html', imgSrc: 'sans fight.png', name: 'Sans Fight' , 'page': 4, 'id': 944 },
   { href: './html/extreme off road cars/index.html', imgSrc: 'extreme off road cars.jpg', name: 'extreme off road cars' , 'page': 4, 'id': 941 },
   { href: './html/football legends/index.html', imgSrc: 'football legends.jpg', name: 'football legends' , 'page': 4, 'id': 946 },

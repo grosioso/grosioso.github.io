@@ -1,1470 +1,301 @@
 <!DOCTYPE html>
-<script type="module">
-  const overlay = document.createElement("div");
-  overlay.style.position = "fixed";
-  overlay.style.top = 0;
-  overlay.style.left = 0;
-  overlay.style.width = "100%";
-  overlay.style.height = "100%";
-  overlay.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-  overlay.style.display = "flex";
-  overlay.style.alignItems = "center";
-  overlay.style.justifyContent = "center";
-  overlay.style.zIndex = "10000";
-  overlay.innerHTML =
-    '<div style="color: white; font-size: 2em;">Loading games...</div>';
-  document.body.appendChild(overlay);
-
-  function fetchExclusionList() {
-    return new Promise((resolve, reject) => {
-      const callbackName = "jsonpCallback_" + Date.now();
-      window[callbackName] = function (data) {
-        delete window[callbackName];
-        script.parentNode.removeChild(script);
-        resolve(data);
-      };
-      const url =
-        "https://script.google.com/macros/s/AKfycbxif7cZdOCWutbiue1m9sSYrH6VKY9VIVnEQDKnZOnJEsSO_cPi1pAU60mxPW8VWpzO/exec?callback=" +
-        callbackName;
-      const script = document.createElement("script");
-      script.src = url;
-      script.onerror = function (error) {
-        delete window[callbackName];
-        script.parentNode.removeChild(script);
-        reject(new Error("JSONP request failed: " + error.message));
-      };
-      document.body.appendChild(script);
-    });
-  }
-
-  function normalizeGameName(name) {
-    return name
-      .toLowerCase()
-      .replace(/\s+/g, "")
-      .replace(/[^a-z0-9]/g, "");
-  }
-
-  function hideExcludedCards(exclusionList) {
-    const normalizedExclusionList = exclusionList.map((name) =>
-      normalizeGameName(name)
-    );
-    const cards = document.querySelectorAll(".card-container");
-    cards.forEach((cardContainer) => {
-      const card = cardContainer.querySelector(".card");
-      const figcaption = card.querySelector("figcaption");
-      const gameName = figcaption.textContent.trim();
-      const normalizedGameName = normalizeGameName(gameName);
-      if (normalizedExclusionList.includes(normalizedGameName)) {
-        cardContainer.style.display = "none";
-      }
-    });
-  }
-
-  function fetchExclusionListFromFirestore() {
-    return window.db
-      .collection("cards")
-      .get()
-      .then((querySnapshot) => {
-        const exclusionList = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          exclusionList.push(data.gameName);
-        });
-        return exclusionList;
-      });
-  }
-
-  Promise.all([
-    new Promise((resolve) => {
-      document.addEventListener("DOMContentLoaded", resolve);
-    }),
-    fetchExclusionListFromFirestore(),
-  ])
-    .then(([_, exclusionList]) => {
-      hideExcludedCards(exclusionList);
-      overlay.parentNode.removeChild(overlay);
-    })
-    .catch((error) => {
-      overlay.parentNode.removeChild(overlay);
-    });
-</script>
-
-<script
-  async
-  src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1609993827735056"
-  crossorigin="anonymous"
-></script>
 <html lang="en">
-  <head>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
-    <script>
-      const firebaseConfig = {
-        apiKey: "AIzaSyBh-VnGiP4qZD0r14gfn9dr77GwtslpTqU",
-        authDomain: "strongdog-auth.firebaseapp.com",
-        databaseURL: "https://strongdog-auth-default-rtdb.firebaseio.com",
-        projectId: "strongdog-auth",
-        storageBucket: "strongdog-auth.appspot.com",
-        messagingSenderId: "936276282572",
-        appId: "1:936276282572:web:a802b7f609381ff9428669",
-        measurementId: "G-0YLTCV2MMS",
-      };
-      firebase.initializeApp(firebaseConfig);
-      const auth = firebase.auth();
-      const db = firebase.firestore();
-      const functions = firebase.functions();
-      window.auth = auth;
-      window.db = db;
-      window.functions = functions;
-    </script>
-    <script>
-      auth.onAuthStateChanged((user) => {
-        if (!user) {
-          window.location.href = "login.html";
-        } else {
-          const userId = user.uid;
-          db.collection("access")
-            .doc(userId)
-            .get()
-            .then((doc) => {
-              if (doc.exists && doc.data().tester === true) {
-                document.body.style.display = "block";
-              } else {
-                window.location.href = "index.html";
-              }
-            })
-            .catch(() => {
-              window.location.href = "index.html";
-            });
-        }
-      });
-    </script>
-    <script type="module">
-      import games from "./cards-data-test.js";
-      import { siteMapping } from "./site-mapping.js";
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>StrongDog XP — Test</title>
+<link rel="icon" type="image/x-icon" href="/img/favicon.ico"/>
+<style>
+:root{--ff:'Nunito',Arial,sans-serif;--bg:#2e2e2e}
+*{box-sizing:border-box}
+body{font-family:var(--ff);margin:0;background:var(--bg);color:#fff}
+.navbar{background:#333;color:#fff;padding:10px 12px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:1000;flex-wrap:wrap}
+.menu-icon{font-size:1.6rem;cursor:pointer}
+.logo{margin-left:auto;margin-right:auto;color:#fff;font-weight:800;text-decoration:none}
+.logo .xp{color:orange}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.controls select,.controls input{background:#222;border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:8px;padding:6px 8px}
+.controls label{display:flex;align-items:center;gap:6px;font-size:.9rem}
+.tag{font-size:.85rem;padding:4px 8px;border:1px solid rgba(255,255,255,.25);border-radius:999px;background:#1f1f1f}
+.search-container{position:relative;margin-left:auto}
+.search-bar{padding:.6rem .9rem;border:none;border-radius:12px;width:260px;background:rgba(0,0,0,.35);color:#fff}
+.search-results{position:absolute;right:0;top:46px;background:rgba(30,30,30,.95);border-radius:12px;width:300px;display:none;overflow:hidden;z-index:1000;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+.search-results a{display:flex;align-items:center;gap:10px;padding:10px 12px;text-decoration:none;color:#fff;border-bottom:1px solid rgba(255,255,255,.1)}
+.search-results img{width:52px;height:52px;object-fit:cover;border-radius:8px}
+.games-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:10px}
+.card{display:block;width:120px;aspect-ratio:1/1;border-radius:12px;overflow:hidden;position:relative;box-shadow:0 5px 18px rgba(0,0,0,.4);transition:transform .25s ease, box-shadow .25s ease}
+.card:hover{transform:scale(1.06) translateY(-6px);box-shadow:0 10px 26px rgba(255,98,0,.35)}
+.card img{width:100%;height:100%;object-fit:cover}
+.card figcaption{position:absolute;left:0;right:0;bottom:0;padding:8px 6px;background:linear-gradient(to top,rgba(0,0,0,.9),transparent);text-align:center;font-weight:700;opacity:0;transform:translateY(100%);transition:all .25s}
+.card:hover figcaption{opacity:1;transform:translateY(0)}
+.card-buttons{display:flex;justify-content:center;gap:8px;margin-top:6px}
+.card-buttons button{background:transparent;border:1px solid rgba(255,255,255,.25);border-radius:8px;padding:2px 6px;font-size:.95rem;cursor:pointer}
+.btn-check{color:#28a745}
+.btn-delete{color:#dc3545}
+.drawer{position:fixed;top:0;left:0;height:100vh;width:260px;background:#1f1f1f;transform:translateX(-100%);transition:transform .25s ease;z-index:1100;padding:20px 16px;display:flex;flex-direction:column;gap:10px}
+.drawer.open{transform:translateX(0)}
+.drawer a{color:#fff;text-decoration:none;padding:12px;border-radius:10px;background:#2b2b2b}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s ease;z-index:1090}
+.overlay.show{opacity:1;pointer-events:auto}
+.loader{display:flex;justify-content:center;align-items:center;height:40vh;font-weight:700;letter-spacing:.5px;opacity:.85}
+.hidden{display:none}
+.busy{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:2000}
+.busy.show{display:flex}
+.spinner{width:56px;height:56px;border-radius:50%;border:6px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.banner{position:fixed;left:50%;transform:translateX(-50%);bottom:16px;background:#222;border:1px solid rgba(255,255,255,.2);padding:10px 14px;border-radius:10px;display:none;z-index:2100;max-width:92vw}
+.banner.show{display:block}
+@media (max-width:768px){.card{width:100px}.logo{order:3;margin:0}}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
+<script>
+const firebaseConfig={apiKey:"AIzaSyBh-VnGiP4qZD0r14gfn9dr77GwtslpTqU",authDomain:"strongdog-auth.firebaseapp.com",databaseURL:"https://strongdog-auth-default-rtdb.firebaseio.com",projectId:"strongdog-auth",storageBucket:"strongdog-auth.appspot.com",messagingSenderId:"936276282572",appId:"1:936276282572:web:a802b7f609381ff9428669",measurementId:"G-0YLTCV2MMS"};
+firebase.initializeApp(firebaseConfig);
+window.auth=firebase.auth();
+window.db=firebase.firestore();
+window.functions=firebase.app().functions("us-central1");
+</script>
+<script type="module">
+import games from "./cards-data-test.js";
 
-      function normalizeGameName(name) {
-        return name
-          .toLowerCase()
-          .replace(/\s+/g, "")
-          .replace(/[^a-z0-9]/g, "");
-      }
+const siteMapping={
+"strongdog.onrender.com":["https://strongdog.onrender.com","https://strongdog2.onrender.com","https://strongdog3.onrender.com","https://strongdog4.onrender.com","https://strongdog5.onrender.com"],
+"strongdog2.onrender.com":["https://strongdog.onrender.com","https://strongdog2.onrender.com","https://strongdog3.onrender.com","https://strongdog4.onrender.com","https://strongdog5.onrender.com"],
+"stroongdog.netlify.app":["https://stroongdog.netlify.app","https://stroongdog2.netlify.app","https://stroongdog3.netlify.app","https://stroongdog4.netlify.app","https://stroongdog5.netlify.app"],
+"stroongdog2.netlify.app":["https://stroongdog.netlify.app","https://stroongdog2.netlify.app","https://stroongdog3.netlify.app","https://stroongdog4.netlify.app","https://stroongdog5.netlify.app"],
+"mathcord.netlify.app":["https://mathcord.netlify.app","https://mathcord2.netlify.app","https://mathcord3.netlify.app","https://mathcord4.netlify.app","https://mathcord5.netlify.app"]
+};
+function normId(s){return (s||"").toLowerCase().replace(/\s+/g,"").replace(/[^a-z0-9]/g,"")}
+function clean(p){return (p||"").replace(/^\.?\//,"")}
+function baseFor(page){if(!page||page<2)return "";const h=location.hostname;let m=null;for(const k in siteMapping){if(h.includes(k)){m=siteMapping[k];break}}if(m&&m[page-1])return m[page-1].replace(/\/$/,"")+"/";if(page===2)return "/strongdog2/";if(page===3)return "/strongdog3/";if(page===4)return "/strongdog4/";if(page===5)return "/strongdog5/";return "/"}
+function isAbs(u){return /^https?:\/\//i.test(u||"")}
+function hrefFor(h,page){const s=clean(h);return isAbs(s)?s:baseFor(page)+s}
+function imgFor(img,page){const s=clean(img);if(isAbs(s))return s;const b=baseFor(page);return b+(s.startsWith("img/")?s:"img/"+s)}
 
-      function getAdjustedUrls(href, imgSrc, page) {
-        let adjustedHref = href;
-        let adjustedImgSrc = `./img/${imgSrc}`;
-        if (page >= 2) {
-          let matchedKey = null;
-          for (const key in siteMapping) {
-            if (window.location.hostname.includes(key)) {
-              matchedKey = key;
-              break;
-            }
-          }
-          if (matchedKey) {
-            const pageIndex = page - 2;
-            const pageBaseURLs = siteMapping[matchedKey];
-            if (pageBaseURLs && pageIndex < pageBaseURLs.length) {
-              const pageBaseURL = pageBaseURLs[pageIndex];
-              const newHref = href.replace(/^\.\//, "");
-              const newImg = imgSrc.replace(/^\.\//, "");
-              adjustedHref = `${pageBaseURL}/${newHref}`;
-              adjustedImgSrc = `${pageBaseURL}/img/${newImg}`;
-            } else {
-              if (page === 2) {
-                adjustedHref = `/strongdog2/${href.replace(/^\.\//, "")}`;
-                adjustedImgSrc = `/strongdog2/img/${imgSrc.replace(
-                  /^\.\//,
-                  ""
-                )}`;
-              } else if (page === 3) {
-                adjustedHref = `/strongdog3/${href.replace(/^\.\//, "")}`;
-                adjustedImgSrc = `/strongdog3/img/${imgSrc.replace(
-                  /^\.\//,
-                  ""
-                )}`;
-              } else if (page === 4) {
-                adjustedHref = `/strongdog4/${href.replace(/^\.\//, "")}`;
-                adjustedImgSrc = `/strongdog4/img/${imgSrc.replace(
-                  /^\.\//,
-                  ""
-                )}`;
-              }
-            }
-          } else {
-            if (page === 2) {
-              adjustedHref = `/strongdog2/${href.replace(/^\.\//, "")}`;
-              adjustedImgSrc = `/strongdog2/img/${imgSrc.replace(/^\.\//, "")}`;
-            } else if (page === 3) {
-              adjustedHref = `/strongdog3/${href.replace(/^\.\//, "")}`;
-              adjustedImgSrc = `/strongdog3/img/${imgSrc.replace(/^\.\//, "")}`;
-            } else if (page === 4) {
-              adjustedHref = `/strongdog4/${href.replace(/^\.\//, "")}`;
-              adjustedImgSrc = `/strongdog4/img/${imgSrc.replace(/^\.\//, "")}`;
-            }
-          }
-        }
-        return { adjustedHref, adjustedImgSrc };
-      }
+const disabledSet=new Set();
+let ready=false,inflight=false;
 
-      function getCardHTML(gameObject) {
-        const { href, imgSrc, name, page } = gameObject;
-        const { adjustedHref, adjustedImgSrc } = getAdjustedUrls(
-          href,
-          imgSrc,
-          page
-        );
-        const gameId = normalizeGameName(name);
-        return `
-          <div class="card-container">
-            <a href="${adjustedHref}" class="card" data-game-id="${gameId}">
-              <img src="${adjustedImgSrc}" alt="${name}">
-              <figcaption>${name}</figcaption>
-            </a>
-            <div class="card-buttons">
-              <button class="btn-check" data-game-name="${name}" title="Add Game">&#10003;</button>
-              <button class="btn-delete" data-game-name="${name}" title="Report Issue">&#10005;</button>
-            </div>
-          </div>
-        `;
-      }
+const byId=new Map();
+for(const g of games){byId.set(normId(g.name),g)}
 
-      let cardsHTMLArr = [];
-      for (let i = 0; i < games.length; i++) {
-        cardsHTMLArr.push(getCardHTML(games[i]));
-      }
+function makeCard(g){
+const to=hrefFor(g.href,g.page);
+const img=imgFor(g.imgSrc,g.page);
+const id=normId(g.name);
+return `
+<div class="card-container" data-game-id="${id}">
+  <a href="${to}" class="card"><img loading="lazy" src="${img}" alt="${g.name}"><figcaption>${g.name}</figcaption></a>
+  <div class="card-buttons">
+    <button class="btn-check" data-game-name="${g.name}" data-game-id="${id}" title="Approve">Approve</button>
+    <button class="btn-delete" data-game-name="${g.name}" data-game-id="${id}" title="Report">Deny</button>
+  </div>
+</div>`}
 
-      document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById("allGame").innerHTML =
-          cardsHTMLArr.join("");
-        addCardButtonListeners();
-      });
+function filtered(q){
+let list=games.filter(g=>!disabledSet.has(normId(g.name)));
+if(!q)return list;
+const s=(q||"").toLowerCase().trim();
+return list.filter(g=>g.name.toLowerCase().includes(s));
+}
 
-      function addCardButtonListeners() {
-        const checkButtons = document.querySelectorAll(".btn-check");
-        const deleteButtons = document.querySelectorAll(".btn-delete");
-        checkButtons.forEach((button) => {
-          button.addEventListener("click", handleCheckClick);
-        });
-        deleteButtons.forEach((button) => {
-          button.addEventListener("click", handleDeleteClick);
-        });
-      }
+function renderAll(list){grid.innerHTML=list.map(makeCard).join("");wireButtons()}
+function renderSearch(q){
+if(!ready){searchBox.style.display="none";searchBox.innerHTML="";return}
+const res=filtered(q).slice(0,12);
+if(!q||res.length===0){searchBox.style.display="none";searchBox.innerHTML="";return}
+searchBox.innerHTML=res.map(g=>`<a href="${hrefFor(g.href,g.page)}"><img src="${imgFor(g.imgSrc,g.page)}"><span>${g.name}</span></a>`).join("");
+searchBox.style.display="block";
+}
 
-      function handleCheckClick(event) {
-        const gameName = event.target.getAttribute("data-game-name");
-        if (!gameName) {
-          alert("Game name is missing.");
-          return;
-        }
-        alert(`${gameName} is being submitted for approval. Please wait...`);
-        const approveGameFunction = firebase
-          .functions()
-          .httpsCallable("approveGameCallable");
-        approveGameFunction({ gameName: gameName.trim() })
-          .then((result) => {
-            alert(
-              result.data.message || `Game "${gameName}" has been approved.`
-            );
-            db.collection("cards")
-              .add({
-                gameName: gameName,
-                disable: true,
-              })
-              .then(() => {
-                event.target.closest(".card-container").remove();
-              });
-          })
-          .catch((error) => {
-            alert(`Error approving game: ${error.message}`);
-          });
-      }
+function setBusy(on){
+inflight=on;
+busy.classList.toggle("show",on);
+document.querySelectorAll(".btn-check,.btn-delete").forEach(b=>b.disabled=on);
+}
 
-      function handleDeleteClick(event) {
-        const gameName = event.target.getAttribute("data-game-name");
-        const issue = prompt(`What was the issue with ${gameName}?`);
-        if (issue) {
-          alert(`${gameName} is now under review.`);
-          sendIssueToGoogleSheetWithIssue(gameName, issue);
-          db.collection("cards")
-            .add({
-              gameName: gameName,
-              disable: true,
-            })
-            .then(() => {});
-        }
-      }
+async function ensureSignedIn(){
+if(firebase.auth().currentUser) return true;
+try{
+const provider=new firebase.auth.GoogleAuthProvider();
+provider.setCustomParameters({prompt:"select_account"});
+await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+await firebase.auth().signInWithPopup(provider);
+return true;
+}catch(e){
+toast("Sign-in blocked or failed. Allow popups and try again.");
+return false;
+}
+}
 
-      function sendIssueToGoogleSheetWithIssue(gameName, issue) {
-        const scriptURL =
-          "https://script.google.com/macros/s/AKfycbxif7cZdOCWutbiue1m9sSYrH6VKY9VIVnEQDKnZOnJEsSO_cPi1pAU60mxPW8VWpzO/exec";
-        const timestamp = new Date().toISOString();
-        fetch(scriptURL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ timestamp, gameName, issue }),
-        });
-      }
-    </script>
-    <script src="appscript.js"></script>
-    <script>
-      function normalizeGameName(name) {
-        return name
-          .toLowerCase()
-          .replace(/\s+/g, "")
-          .replace(/[^a-z0-9]/g, "");
-      }
-      document.addEventListener("DOMContentLoaded", function () {
-        const topGameList = document.getElementById("topGameList");
-        const loadingContainerEl = document.createElement("div");
-        loadingContainerEl.className = "loading-container";
-        loadingContainerEl.innerHTML = `
-			<div class="bars">
-			  <div class="bar bar-1"></div>
-			  <div class="bar bar-2"></div>
-			  <div class="bar bar-3"></div>
-			  <div class="bar bar-4"></div>
-			  <div class="bar bar-5"></div>
-			</div>
-		  `;
-        topGameList.appendChild(loadingContainerEl);
-        function fetchTopGames() {
-          fetch(targetUrl, {
-            method: "GET",
-          })
-            .then((response) => {
-              if (!response.ok) {
-                throw new Error(
-                  "Network response was not ok " + response.statusText
-                );
-              }
-              return response.json();
-            })
-            .then((data) => {
-              if (data && data.content) {
-                const parsedData = JSON.parse(data.content);
-                displayTopGames(parsedData);
-              }
-            })
-            .catch(() => {})
-            .finally(() => {
-              loadingContainerEl.style.display = "none";
-            });
-        }
-        function displayTopGames(games) {
-          if (!topGameList) return;
-          topGameList.innerHTML = "";
-          games.slice(1).forEach((game) => {
-            const gameName = game[0];
-            const matchingCard = findMatchingCard(gameName);
-            if (matchingCard) {
-              topGameList.appendChild(matchingCard.cloneNode(true));
-            }
-          });
-        }
-        function findMatchingCard(gameName) {
-          const formattedGameName = normalizeGameName(gameName);
-          const cards = document.querySelectorAll("#allGame .card");
-          for (let card of cards) {
-            const cardGameId = card.getAttribute("data-game-id");
-            if (cardGameId === formattedGameName) {
-              return card;
-            }
-          }
-          return null;
-        }
-        (function () {
-          loadingContainerEl.style.display = "flex";
-          fetchTopGames();
-        })();
-      });
-    </script>
-    <link rel="icon" type="image/x-icon" href="/img/favicon.ico" />
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>StrongDog XP</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #2e2e2e;
-      }
-      .navbar {
-        background-color: #333;
-        color: white;
-        padding: 10px 20px;
-        display: flex;
-        align-items: center;
-        position: relative;
-        justify-content: space-between;
-      }
-      .logo {
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        color: white;
-        font-weight: bold;
-      }
-      .menu-icon {
-        font-size: 2rem;
-        cursor: pointer;
-        margin-left: 20px;
-        color: white;
-        position: relative;
-        z-index: 1001;
-      }
-      .slide-menu {
-        position: fixed;
-        top: 0;
-        height: 100%;
-        width: 350px;
-        background-color: rgba(0, 0, 0, 0.4);
-        backdrop-filter: blur(10px);
-        color: white;
-        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.5);
-        z-index: 1003;
-        transition: transform 0.4s ease;
-        overflow-y: auto;
-        transform: translateX(-100%);
-      }
-      .profile-picture {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-      .profile-picture-container {
-        border-radius: 50%;
-        width: 100px;
-        aspect-ratio: 1;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-      }
-      .user-details-container {
-        display: flex;
-        width: 100%;
-        justify-content: center;
-        gap: 20px;
-        padding-block: 40px;
-      }
-      .username-container {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-      .username-text {
-        font-size: 1.5rem;
-      }
-      .categories {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      }
-      .categories > a {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 20px;
-        background: rgba(0, 0, 0, 0.3);
-        border-radius: 20px;
-        text-decoration: none;
-        color: white;
-        transition: all 0.3s ease;
-        margin-left: 20px;
-        margin-right: 20px;
-        text-align: center;
-        font-size: 1.1rem;
-        position: relative;
-        overflow: hidden;
-      }
-      .categories > a::after {
-        content: "";
-        background: rgba(255, 255, 255, 0.1);
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border-radius: 50%;
-        width: 0;
-        height: 0;
-        transition: 0.4s ease-out;
-      }
-      .categories > a:hover::after {
-        width: 400px;
-        height: 400px;
-      }
-      .categories > a:hover {
-        transform: scale(0.95);
-      }
-      span.new-feature-tag {
-        background: orange;
-        border-radius: 100vw;
-        padding: 0.2rem 0.4rem;
-        margin-left: 1rem;
-        font-size: 0.6rem;
-        color: black;
-        text-transform: uppercase;
-      }
-      .navbar .logo {
-        color: white;
-        font-weight: bold;
-      }
-      .navbar .logo .xp {
-        color: orange;
-      }
-      .navbar a,
-      .navbar a:visited,
-      .navbar .logo span {
-        text-decoration: none;
-        margin-right: 20px;
-      }
-      .search-bar {
-        padding: 7px;
-        padding-top: 10px;
-        font-size: 1em;
-        border-radius: 20%;
-        width: 100%;
-        border: none;
-        border-bottom: 5px solid gray;
-        background-color: transparent;
-        color: white;
-      }
-      .search-bar:focus {
-        outline: none;
-        background-color: rgba(255, 255, 255, 0.1);
-      }
-      .games-grid {
-        display: flex;
-        flex-wrap: wrap;
-        padding: 10px;
-        justify-content: center;
-      }
-      .card {
-        display: block;
-        width: 120px;
-        height: 120px;
-        background-color: #fff;
-        border-radius: 10px;
-        overflow: hidden;
-        position: relative;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-      }
-      .card:hover {
-        transform: scale(1.05);
-        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.29);
-      }
-      .card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform 0.3s ease;
-      }
-      .card:hover img {
-        transform: scale(1.02);
-      }
-      .card figcaption {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: rgba(95, 95, 95, 0.8);
-        color: black;
-        padding: 5px 0;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-        transform: translateY(100%);
-        opacity: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-shadow: 0 0 2px white;
-        font-weight: 550;
-        border-radius: 10px;
-      }
-      .card:hover figcaption {
-        height: 30px;
-        background-color: rgba(95, 95, 95, 0.8);
-        transform: translateY(0);
-        opacity: 1;
-      }
-      .card::before {
-        content: "";
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 200%;
-        height: 200%;
-        background: linear-gradient(
-          to right,
-          rgba(255, 255, 255, 0) 0%,
-          rgba(255, 255, 255, 0.3) 50%,
-          rgba(255, 255, 255, 0) 100%
-        );
-        transform: rotate(30deg) translate(-50%, -50%);
-        transition: transform 0.5s, opacity 0.5s;
-        opacity: 0;
-        pointer-events: none;
-      }
-      .card:hover::before {
-        transform: rotate(30deg) translate(100%, -50%);
-        opacity: 1;
-      }
-      .search-results {
-        position: absolute;
-        right: 20px;
-        top: 60px;
-        background-color: white;
-        color: black;
-        border: 1px solid #ccc;
-        width: 250px;
-        display: none;
-        z-index: 1000;
-        transform-origin: left;
-        transition: transform 0.3s ease, background-color 0.3s ease;
-        border-radius: 5px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      }
-      .search-results a {
-        display: flex;
-        align-items: center;
-        text-decoration: none;
-        color: black;
-        border-bottom: 1px solid #eee;
-        padding: 5px;
-        transition: all 0.3s ease;
-      }
-      .search-results img {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        margin-right: 10px;
-        border-radius: 5px;
-      }
-      .search-results a:last-child {
-        border-bottom: none;
-      }
-      .news-container {
-        margin: 20px auto;
-        padding: 20px;
-        background-color: #444444;
-        border-radius: 8px;
-        max-width: 800px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
-      .news {
-        color: #ffffff;
-      }
-      .credits-title {
-        font-size: 1.5em;
-        margin-bottom: 15px;
-        color: #ffffff;
-        border-bottom: 2px solid #ddd;
-        padding-bottom: 5px;
-      }
-      .credits-item {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 15px;
-      }
-      .credits-role {
-        font-weight: bold;
-        color: #ffffff;
-      }
-      .credits-names {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        align-items: center;
-      }
-      .credits-link {
-        color: #0073e6;
-        text-decoration: none;
-        font-weight: bold;
-      }
-      .credits-link:hover {
-        text-decoration: underline;
-      }
-      .credits-names span {
-        color: #c4c4c4;
-      }
-      .credits-item:last-child .credits-names {
-        gap: 16px;
-      }
-      .credits-item:last-child .credits-link {
-        color: #00b3b3;
-      }
-      .credits-item:last-child .credits-link:hover {
-        text-decoration: underline;
-        color: #00cccc;
-      }
-      h2 {
-        text-align: center;
-        color: white;
-        margin: 20px 0;
-        font-size: 1.5em;
-      }
-      .card figcaption {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        background-color: rgba(95, 95, 95, 0.8);
-        color: black;
-        padding: 5px 0;
-        transition: transform 0.3s ease, opacity 0.3s ease;
-        transform: translateY(100%);
-        opacity: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        text-shadow: 0 0 2px white;
-        font-weight: 550;
-        border-radius: 10px;
-      }
-      .card:hover figcaption {
-        height: 30px;
-        background-color: rgba(95, 95, 95, 0.8);
-        transform: translateY(0);
-        opacity: 1;
-      }
-      .updates-paragraph-text {
-        color: white;
-        background-color: #a83632;
-        padding: 15px 10px;
-        border-radius: 10px;
-        box-shadow: 0 0 10px 5px rgba(255, 255, 255, 0.05);
-        margin-bottom: 30px;
-      }
-      .updates-text-container {
-        margin-left: 30%;
-        margin-right: 30%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-      .loading-container {
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-      .bars {
-        display: flex;
-        align-items: center;
-      }
-      .bar {
-        background-color: rgba(255, 255, 255, 0.3);
-        width: 20px;
-        height: 40px;
-        margin-right: 5px;
-        border-radius: 10px;
-        animation: load ease infinite 5s;
-      }
-      .bar-2,
-      .bar-4 {
-        height: 50px;
-      }
-      .bar-2 {
-        animation-delay: 0.1s;
-      }
-      .bar-3 {
-        height: 60px;
-        animation-delay: 0.2s;
-      }
-      .bar-4 {
-        animation-delay: 0.3s;
-      }
-      .bar-5 {
-        animation-delay: 0.4s;
-      }
-      @keyframes load {
-        0%,
-        100% {
-          transform: rotate(0deg);
-        }
-        50% {
-          transform: rotate(720deg) rotateX(180deg);
-        }
-      }
-      #topGameList {
-        position: relative;
-      }
-      .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        justify-content: center;
-        align-items: center;
-      }
-      .modal-content {
-        background-color: #757575;
-        padding: 20px;
-        border-radius: 10px;
-        width: 90%;
-        max-width: 400px;
-        text-align: center;
-      }
-      .modal-close {
-        color: #aaa;
-        float: right;
-        font-size: 28px;
-        font-weight: bold;
-        cursor: pointer;
-      }
-      .modal-close:hover,
-      .modal-close:focus {
-        color: #000;
-        text-decoration: none;
-        cursor: pointer;
-      }
-      .modal-link {
-        color: blue;
-        text-decoration: underline;
-        cursor: pointer;
-      }
-      .card-buttons {
-        display: flex;
-        justify-content: center;
-        margin-top: 5px;
-      }
-      .card-container {
-        position: relative;
-        display: inline-block;
-        margin: 10px;
-      }
-      .card-buttons button {
-        background-color: transparent;
-        border: none;
-        cursor: pointer;
-        font-size: 1.2em;
-        margin: 0 5px;
-        transition: transform 0.2s, color 0.2s;
-      }
-      .card-buttons button:hover {
-        transform: scale(1.2);
-      }
-      .btn-check {
-        color: green;
-      }
-      .btn-delete {
-        color: red;
-      }
-      .btn-check,
-      .btn-delete {
-        width: 24px;
-        height: 24px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-    </style>
-  </head>
-  <body style="display: none">
-    <script
-      async
-      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1609993827735056"
-      crossorigin="anonymous"
-    ></script>
-    <ins
-      class="adsbygoogle"
-      style="display: block"
-      data-ad-client="ca-pub-1609993827735056"
-      data-ad-slot="7006123985"
-      data-ad-format="auto"
-      data-full-width-responsive="true"
-    ></ins>
-    <script>
-      (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-    <div
-      id="secretLink"
-      title="Secret Menu"
-      style="
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 10px;
-        height: 10px;
-        cursor: pointer;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-      "
-    ></div>
-    <script>
-      window.addEventListener("load", function () {
-        const secretLink = document.getElementById("secretLink");
-        secretLink.addEventListener("click", function () {
-          window.location.href = "secret-menu.html";
-        });
-      });
-    </script>
-    <div class="navbar">
-      <div class="menu-icon" id="menuIcon">&#9776;</div>
-      <a href="index.html" class="logo">StrongDog<span class="xp">XP</span></a>
-      <div class="search-container">
-        <input
-          type="text"
-          class="search-bar"
-          placeholder="Search for games..."
-          id="searchInput"
-          autocomplete="off"
-        />
-        <div class="search-results" id="searchResults"></div>
-      </div>
-    </div>
-    <div class="updates-text-container">
-      <p class="updates-paragraph-text">
-        All games from StrongDog page 1 and 2 have been merged together! If you
-        find bugs, please report them
-        <a href="/about.html">here</a>!
-      </p>
-    </div>
-    <div class="modal" id="popupModal">
-      <div class="modal-content">
-        <span class="modal-close" id="closeModal">&times;</span>
-        <p>
-          The strongdog discord server is a place for strongdog users to chill,
-          play games together, request ideas, and have fun!
-        </p>
-        <p>
-          If you want to help on strongdog, there is a chat where you can get
-          help downloading games, and you can upload games YOU download to add
-          to strongdog! (and yes, you will get credit for downloading games)
-        </p>
-        <p>
-          Ready to join? Click
-          <a href="https://discord.gg/pWjfQ4Sz5c" target="_blank">here</a> to
-          join the Discord server!
-        </p>
-      </div>
-    </div>
+function toast(msg){
+banner.textContent=msg;
+banner.classList.add("show");
+setTimeout(()=>banner.classList.remove("show"),5000);
+}
 
-    <h2 style="text-align: center"><strong>All</strong></h2>
-    <div class="games-grid" id="allGame"></div>
+function buildPayload(rec){
+const strip=stripParens.checked;
+const rawName=strip?rec.name.replace(/\(.*?\)/g,"").trim():rec.name;
+const override=(nameOverride.value||"").trim();
+const finalName=override||rawName;
+const keyStyle=keySelect.value; // "gameName" or "name"
+const dataset=datasetSelect.value; // "cards-data-test.js" or "cards-data.js"
+const base={href:rec.href,imgSrc:rec.imgSrc,page:rec.page??null,source:"test",dataset};
+if(keyStyle==="name") return {name:finalName,...base};
+return {gameName:finalName,...base};
+}
 
-    <h2 style="text-align: center"><strong>StrongDogXP LLC</strong></h2>
-    <div class="news-container">
-      <div class="news">
-        <div class="credits-item">
-          <div class="credits-role">CEO</div>
-          <div class="credits-names">
-            <a
-              href="https://github.com/jman1593"
-              target="_blank"
-              class="credits-link"
-              >Joshua Pettit</a
-            >
-          </div>
-        </div>
-        <div class="credits-item">
-          <div class="credits-role">Developers</div>
-          <div class="credits-names">
-            <a
-              href="https://github.com/JamesMeadows4"
-              target="_blank"
-              class="credits-link"
-              >James Meadows</a
-            >
-            <span>|</span>
-            <a
-              href="https://github.com/jman1593"
-              target="_blank"
-              class="credits-link"
-              >Joshua Pettit</a
-            >
-          </div>
-        </div>
-        <div class="credits-item">
-          <div class="credits-role">Game Downloaders</div>
-          <div class="credits-names">
-            <a
-              href="https://github.com/jman1593"
-              target="_blank"
-              class="credits-link"
-              >Joshua Pettit</a
-            >
-          </div>
-        </div>
-        <div class="credits-item">
-          <div class="credits-role">Other Links</div>
-          <div class="credits-names">
-            <a
-              href="https://mathcord.netlify.app"
-              target="_blank"
-              class="credits-link"
-              >mathcord.netlify.app</a
-            >
-            <span>|</span>
-            <a
-              href="https://strongdog.onrender.com"
-              target="_blank"
-              class="credits-link"
-              >strongdog.onrender.com</a
-            >
-            <span>|</span>
-            <a
-              href="https://jman1593.github.io"
-              target="_blank"
-              class="credits-link"
-              >jman1593.github.io</a
-            >
-            <span>|</span>
-            <a
-              href="https://strongdog.netlify.app"
-              target="_blank"
-              class="credits-link"
-              >strongdog.netlify.app</a
-            >
-            <span>|</span>
-            <a
-              href="https://strongdog-1.vercel.app"
-              target="_blank"
-              class="credits-link"
-              >strongdog-1.vercel.app</a
-            >
-            <span>|</span>
-            <a href="https://mathcord.com" target="_blank" class="credits-link"
-              >mathcord.com</a
-            >
-            <span>|</span>
-            <a href="https://strongdog.com" target="_blank" class="credits-link"
-              >strongdog.com</a
-            >
-          </div>
-        </div>
-        <div class="credits-item">
-          <div class="credits-role">MORE UNBLOCKED LINKS ON THE DISCORD</div>
-        </div>
-      </div>
-    </div>
-    <div class="slide-menu" id="slideMenu">
-      <div class="user-details-container">
-        <div class="profile-picture-container">
-          <a href="settings.html">
-            <img class="profile-picture" src="img/default-avatar.png" />
-          </a>
-        </div>
-        <div class="username-container">
-          <p class="username-text">Your Username</p>
-        </div>
-      </div>
-      <div class="categories">
-        <a href="favs.html" class="option-link">Favorites</a>
-        <a href="#" id="randomGame" class="option-link">Random</a>
-        <a href="#" id="blockLanschool" class="option-link">Block Lanschool</a>
-        <a href="about.html" class="option-link"
-          >About / Report Bugs / Request Games</a
-        >
-        <a href="https://discord.gg/pWjfQ4Sz5c" class="option-link"
-          >Discord Server<span class="new-feature-tag">new</span></a
-        >
-      </div>
-    </div>
-    <script type="module">
-      import games from "./cards-data-test.js";
-      document.addEventListener("DOMContentLoaded", function () {
-        const menuIcon = document.getElementById("menuIcon");
-        const slideMenu = document.createElement("div");
-        slideMenu.className = "slide-menu";
-        const originalCategories = document.querySelector(".categories");
-        const categories = originalCategories.cloneNode(true);
-        slideMenu.appendChild(categories);
-        document.body.appendChild(slideMenu);
-        menuIcon.addEventListener("click", function (event) {
-          event.stopPropagation();
-          if (slideMenu.style.transform === "translateX(0%)") {
-            slideMenu.style.transform = "translateX(-100%)";
-          } else {
-            slideMenu.style.transform = "translateX(0%)";
-          }
-        });
-        window.addEventListener("click", function (event) {
-          if (event.target !== menuIcon && !slideMenu.contains(event.target)) {
-            slideMenu.style.transform = "translateX(-100%)";
-          }
-        });
-        auth.onAuthStateChanged(async (user) => {
-          let userDetailsContainer;
-          if (!user) {
-            window.location.href = "login.html";
-          }
-          if (user) {
-            const originalUserDetailsContainer = document.querySelector(
-              ".user-details-container"
-            );
-            userDetailsContainer = originalUserDetailsContainer.cloneNode(true);
-            const profilePictureElement =
-              userDetailsContainer.querySelector(".profile-picture");
-            const usernameElement =
-              userDetailsContainer.querySelector(".username-text");
-            if (user.photoURL) {
-              profilePictureElement.src = user.photoURL;
-            } else {
-              profilePictureElement.src = "img/default-avatar.png";
-            }
-            const userId = user.uid;
-            const userDocRef = db.collection("usernames").doc(userId);
-            const userDoc = await userDocRef.get();
-            if (userDoc.exists) {
-              const userData = userDoc.data();
-              usernameElement.textContent = userData.username || "Username";
-            } else {
-              usernameElement.textContent = user.displayName || "Username";
-            }
-            profilePictureElement.parentElement.addEventListener(
-              "click",
-              () => {
-                window.location.href = "settings.html";
-              }
-            );
-            slideMenu.insertBefore(userDetailsContainer, categories);
-            const logoutLink = document.createElement("a");
-            logoutLink.href = "#";
-            logoutLink.className = "option-link";
-            logoutLink.textContent = "Log Out";
-            logoutLink.style.backgroundColor = "#dc3545";
-            logoutLink.style.color = "white";
-            logoutLink.addEventListener("click", function (e) {
-              e.preventDefault();
-              auth
-                .signOut()
-                .then(() => {
-                  window.location.reload();
-                })
-                .catch((error) => {
-                  console.error("Error signing out:", error);
-                });
-            });
-            const favoritesLink = categories.querySelector(
-              'a[href="favs.html"]'
-            );
-            categories.insertBefore(logoutLink, favoritesLink);
-          } else {
-            userDetailsContainer = document.createElement("div");
-            userDetailsContainer.className = "user-details-container";
-            const notLoggedInContainer = document.createElement("div");
-            notLoggedInContainer.className = "username-container";
-            const notLoggedInText = document.createElement("p");
-            notLoggedInText.className = "username-text";
-            notLoggedInText.textContent = "Not logged in";
-            notLoggedInContainer.appendChild(notLoggedInText);
-            const loginButton = document.createElement("button");
-            loginButton.textContent = "Log In";
-            loginButton.style.backgroundColor = "#007bff";
-            loginButton.style.color = "white";
-            loginButton.style.border = "none";
-            loginButton.style.padding = "10px 20px";
-            loginButton.style.fontSize = "16px";
-            loginButton.style.borderRadius = "5px";
-            loginButton.style.cursor = "pointer";
-            loginButton.style.marginTop = "5px";
-            loginButton.addEventListener("click", function () {
-              window.location.href = "login.html";
-            });
-            userDetailsContainer.style.display = "flex";
-            userDetailsContainer.style.flexDirection = "column";
-            userDetailsContainer.style.alignItems = "center";
-            userDetailsContainer.style.paddingBlock = "40px";
-            userDetailsContainer.appendChild(notLoggedInContainer);
-            userDetailsContainer.appendChild(loginButton);
-            slideMenu.insertBefore(userDetailsContainer, categories);
-          }
-          const randomGameLink = categories.querySelector("#randomGame");
-          randomGameLink?.addEventListener("click", function (e) {
-            e.preventDefault();
-            if (games.length > 0) {
-              const randomIndex = Math.floor(Math.random() * games.length);
-              const randomGamePath = games[randomIndex].href;
-              window.location.href = randomGamePath;
-            }
-          });
-          const blockLanschoolLink =
-            categories.querySelector("#blockLanschool");
-          blockLanschoolLink?.addEventListener("click", function (e) {
-            e.preventDefault();
-            var url = "https://strongdog.netlify.app";
-            var newTab = window.open();
-            if (!newTab) {
-              return;
-            }
-            newTab.document.write(`
-              <html>
-                <body style="margin: 0; height: 100vh;">
-                  <iframe src="${url}" style="border: none; width: 100%; height: 100%;"></iframe>
-                </body>
-              </html>
-            `);
-            newTab.document.close();
-          });
-        });
-      });
-    </script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const discordLink = document.getElementById("discordLink");
-        const modal = document.getElementById("popupModal");
-        const closeModal = document.getElementById("closeModal");
-        discordLink?.addEventListener("click", function () {
-          modal.style.display = "flex";
-        });
-        closeModal?.addEventListener("click", function () {
-          modal.style.display = "none";
-        });
-        window.addEventListener("click", function (event) {
-          if (event.target === modal) {
-            modal.style.display = "none";
-          }
-        });
-      });
-    </script>
-    <script type="module">
-      import games from "./cards-data-test.js";
-      import { siteMapping } from "./site-mapping.js";
-      document.addEventListener("DOMContentLoaded", function () {
-        const searchInput = document.querySelector(".search-bar");
-        const searchResults = document.getElementById("searchResults");
-        if (!searchInput || !searchResults) return;
-        searchInput.addEventListener("focus", updateSearchResults);
-        searchInput.addEventListener("input", updateSearchResults);
-        document.addEventListener("click", function (event) {
-          if (
-            !searchInput.contains(event.target) &&
-            !searchResults.contains(event.target)
-          ) {
-            searchResults.style.display = "none";
-          }
-        });
-        function updateSearchResults() {
-          const searchText = searchInput.value.toLowerCase();
-          const filtered = games
-            .filter((game) => game.name.toLowerCase().includes(searchText))
-            .slice(0, 7);
-          searchResults.innerHTML = "";
-          if (filtered.length === 0) {
-            searchResults.style.display = "none";
-            return;
-          }
-          filtered.forEach((game) => {
-            let adjustedHref = game.href;
-            let adjustedImg = `./img/${game.imgSrc}`;
-            if (game.page >= 2) {
-              let matchedKey = null;
-              for (const key in siteMapping) {
-                if (window.location.hostname.includes(key)) {
-                  matchedKey = key;
-                  break;
-                }
-              }
-              if (matchedKey) {
-                const pageIndex = game.page - 2;
-                const pageBaseURLs = siteMapping[matchedKey];
-                if (pageBaseURLs && pageIndex < pageBaseURLs.length) {
-                  const pageBaseURL = pageBaseURLs[pageIndex];
-                  adjustedHref = `${pageBaseURL}/${game.href.replace(
-                    /^\.\//,
-                    ""
-                  )}`;
-                  adjustedImg = `${pageBaseURL}/img/${game.imgSrc.replace(
-                    /^\.\//,
-                    ""
-                  )}`;
-                } else {
-                  if (game.page === 2) {
-                    adjustedHref = `/strongdog2/${game.href.replace(
-                      /^\.\//,
-                      ""
-                    )}`;
-                    adjustedImg = `/strongdog2/img/${game.imgSrc.replace(
-                      /^\.\//,
-                      ""
-                    )}`;
-                  } else if (game.page === 3) {
-                    adjustedHref = `/strongdog3/${game.href.replace(
-                      /^\.\//,
-                      ""
-                    )}`;
-                    adjustedImg = `/strongdog3/img/${game.imgSrc.replace(
-                      /^\.\//,
-                      ""
-                    )}`;
-                  } else if (game.page === 4) {
-                    adjustedHref = `/strongdog4/${game.href.replace(
-                      /^\.\//,
-                      ""
-                    )}`;
-                    adjustedImg = `/strongdog4/img/${game.imgSrc.replace(
-                      /^\.\//,
-                      ""
-                    )}`;
-                  }
-                }
-              } else {
-                if (game.page === 2) {
-                  adjustedHref = `/strongdog2/${game.href.replace(
-                    /^\.\//,
-                    ""
-                  )}`;
-                  adjustedImg = `/strongdog2/img/${game.imgSrc.replace(
-                    /^\.\//,
-                    ""
-                  )}`;
-                } else if (game.page === 3) {
-                  adjustedHref = `/strongdog3/${game.href.replace(
-                    /^\.\//,
-                    ""
-                  )}`;
-                  adjustedImg = `/strongdog3/img/${game.imgSrc.replace(
-                    /^\.\//,
-                    ""
-                  )}`;
-                } else if (game.page === 4) {
-                  adjustedHref = `/strongdog4/${game.href.replace(
-                    /^\.\//,
-                    ""
-                  )}`;
-                  adjustedImg = `/strongdog4/img/${game.imgSrc.replace(
-                    /^\.\//,
-                    ""
-                  )}`;
-                }
-              }
-            }
-            const resultLink = document.createElement("a");
-            resultLink.href = adjustedHref;
-            resultLink.innerHTML = `
-              <img src="${adjustedImg}" alt="${game.name}">
-              <span>${game.name}</span>
-            `;
-            searchResults.appendChild(resultLink);
-          });
-          searchResults.style.display = "block";
-        }
-      });
-    </script>
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const page1Link = document.getElementById("page1-link");
-        const page2Link = document.getElementById("page2-link");
-        const hostname = window.location.hostname;
-        const linkMap = {
-          "jman1593.github.io": {
-            page1: "/#",
-            page2: "/strongdog2/index.html",
-          },
-          "strongdog-1.vercel.app": {
-            page1: "https://strongdog-1.vercel.app",
-            page2: "https://strongdog2.vercel.app",
-          },
-          "strongdog2.vercel.app": {
-            page1: "https://strongdog-1.vercel.app",
-            page2: "https://strongdog2.vercel.app",
-          },
-          "strongdog.netlify.app": {
-            page1: "https://strongdog.netlify.app",
-            page2: "https://strongdog2.netlify.app",
-          },
-          "strongdog2.netlify.app": {
-            page1: "https://strongdog.netlify.app",
-            page2: "https://strongdog2.netlify.app",
-          },
-          "mathcord.netlify.app": {
-            page1: "https://mathcord.netlify.app",
-            page2: "https://mathcord2.netlify.app",
-          },
-          "mathcord2.netlify.app": {
-            page1: "https://mathcord.netlify.app",
-            page2: "https://mathcord2.netlify.app",
-          },
-          "strongdog.onrender.com": {
-            page1: "https://strongdog.onrender.com",
-            page2: "https://strongdog2.onrender.com",
-          },
-          "strongdog2.onrender.com": {
-            page1: "https://strongdog.onrender.com",
-            page2: "https://strongdog2.onrender.com",
-          },
-          "stroongdog.netlify.app": {
-            page1: "https://stroongdog.netlify.app",
-            page2: "https://stroongdog2.netlify.app",
-          },
-          "stroongdog2.netlify.app": {
-            page1: "https://stroongdog.netlify.app",
-            page2: "https://stroongdog2.netlify.app",
-          },
-        };
-        if (page1Link && page2Link) {
-          for (const key in linkMap) {
-            if (hostname.includes(key)) {
-              page1Link.href = linkMap[key].page1;
-              page2Link.href = linkMap[key].page2;
-              break;
-            }
-          }
-        }
-      });
-    </script>
-    <script>
-      document
-        .getElementById("secretLink")
-        .addEventListener("click", function () {
-          window.location.href = "secret-menu.html";
-        });
-    </script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const discordLink = document.getElementById("discordLink");
-        const modal = document.getElementById("popupModal");
-        const closeModal = document.getElementById("closeModal");
-        discordLink?.addEventListener("click", function () {
-          modal.style.display = "flex";
-        });
-        closeModal?.addEventListener("click", function () {
-          modal.style.display = "none";
-        });
-        window.addEventListener("click", function (event) {
-          if (event.target === modal) {
-            modal.style.display = "none";
-          }
-        });
-      });
-    </script>
-    <script type="module">
-      import games from "./cards-data-test.js";
-      document.addEventListener("DOMContentLoaded", function () {
-        const randomGameButton = document.getElementById("randomGame");
-        function handleRandomGameClick() {
-          if (games.length > 0) {
-            const randomIndex = Math.floor(Math.random() * games.length);
-            const randomGamePath = games[randomIndex].href;
-            window.location.href = randomGamePath;
-          }
-        }
-        randomGameButton.addEventListener("click", function (event) {
-          event.preventDefault();
-          handleRandomGameClick();
-        });
-      });
-    </script>
-  </body>
+async function callApprove(rec){
+const fn=window.functions.httpsCallable("approveGameCallable");
+const payload=buildPayload(rec);
+try{
+await fn(payload);
+return {ok:true,name:(payload.gameName||payload.name)};
+}catch(err){
+const msg=(err&&err.message)||"call failed";
+return {ok:false,name:(payload.gameName||payload.name),error:msg,payload};
+}
+}
+
+async function callReport(rec,issue){
+const payload={timestamp:new Date().toISOString(),...buildPayload(rec),issue};
+await fetch("https://script.google.com/macros/s/AKfycbxif7cZdOCWutbiue1m9sSYrH6VKY9VIVnEQDKnZOnJEsSO_cPi1pAU60mxPW8VWpzO/exec",{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
+return {ok:true,name:(payload.gameName||payload.name)};
+}
+
+async function approveFlow(id,displayName,btn){
+const rec=byId.get(id);
+if(!rec) throw new Error("Game not found");
+const okAuth=await ensureSignedIn();
+if(!okAuth) throw new Error("Not signed in");
+const res=await callApprove(rec);
+if(res.ok){
+await firebase.firestore().collection("cards").add({gameName:res.name,disable:true});
+btn.closest(".card-container")?.remove();
+toast("Approved ✓");
+}else{
+await firebase.firestore().collection("cards").add({gameName:res.name,disable:true});
+btn.closest(".card-container")?.remove();
+toast("Approved locally only: "+res.error);
+console.warn("approveGameCallable failed:",res.error,"payload:",res.payload);
+}
+}
+
+async function reportFlow(id,displayName,btn){
+const rec=byId.get(id);
+if(!rec) throw new Error("Game not found");
+const okAuth=await ensureSignedIn();
+if(!okAuth) throw new Error("Not signed in");
+const issue=prompt(`Reason for denying ${rec.name}?`); if(!issue) return;
+const res=await callReport(rec,issue);
+await firebase.firestore().collection("cards").add({gameName:res.name,disable:true});
+btn.closest(".card-container")?.remove();
+toast("Denied and logged ✓");
+}
+
+function wireButtons(){
+document.querySelectorAll(".btn-check").forEach(btn=>{
+btn.addEventListener("click",async ()=>{
+if(inflight) return;
+try{setBusy(true);await approveFlow(btn.dataset.gameId,btn.dataset.gameName,btn)}
+catch(err){toast("Error: "+err.message)}
+finally{setBusy(false)}
+});
+});
+document.querySelectorAll(".btn-delete").forEach(btn=>{
+btn.addEventListener("click",async ()=>{
+if(inflight) return;
+try{setBusy(true);await reportFlow(btn.dataset.gameId,btn.dataset.gameName,btn)}
+catch(err){toast("Error: "+err.message)}
+finally{setBusy(false)}
+});
+});
+}
+
+function subscribeDisabled(){
+firebase.firestore().collection("cards").onSnapshot(s=>{
+disabledSet.clear();
+s.forEach(d=>{const v=d.data()||{};if(v.disable)disabledSet.add(normId(v.gameName||""))});
+ready=true;
+loader.classList.add("hidden");
+grid.classList.remove("hidden");
+search.disabled=false;
+renderAll(filtered(""));
+});
+}
+
+const grid=document.getElementById("allGame");
+const search=document.getElementById("searchInput");
+const searchBox=document.getElementById("searchResults");
+const drawer=document.getElementById("drawer");
+const overlay=document.getElementById("overlay");
+const menuIcon=document.getElementById("menuIcon");
+const loader=document.getElementById("loader");
+const busy=document.getElementById("busy");
+const banner=document.getElementById("banner");
+const datasetSelect=document.getElementById("dataset");
+const keySelect=document.getElementById("keySelect");
+const stripParens=document.getElementById("stripParens");
+const nameOverride=document.getElementById("nameOverride");
+const authBtn=document.getElementById("authBtn");
+
+firebase.auth().onAuthStateChanged(u=>{
+document.getElementById("signedIn").textContent=u? (u.email||"Signed in") : "Not signed in";
+authBtn.textContent=u? "Signed in" : "Sign in";
+authBtn.disabled=!!u;
+});
+
+document.addEventListener("DOMContentLoaded",()=>{
+grid.classList.add("hidden");
+search.disabled=true;
+subscribeDisabled();
+authBtn.addEventListener("click",()=>ensureSignedIn());
+search.addEventListener("input",e=>renderSearch(e.target.value));
+document.addEventListener("click",e=>{if(!searchBox.contains(e.target)&&e.target!==search)searchBox.style.display="none"});
+function toggleMenu(open){drawer.classList.toggle("open",open);overlay.classList.toggle("show",open)}
+menuIcon.addEventListener("click",()=>toggleMenu(!drawer.classList.contains("open")));
+overlay.addEventListener("click",()=>toggleMenu(false));
+document.querySelectorAll(".drawer a").forEach(a=>a.addEventListener("click",()=>toggleMenu(false)));
+});
+</script>
+</head>
+<body>
+<div style="position:absolute;top:10px;right:10px;width:10px;height:10px;border-radius:50%;cursor:pointer;z-index:1000" onclick="location.href='secret-menu.html'"></div>
+<div class="navbar">
+<div class="menu-icon" id="menuIcon">&#9776;</div>
+<span class="tag" id="signedIn">Not signed in</span>
+<div class="controls">
+  <select id="dataset" title="Dataset">
+    <option value="cards-data-test.js" selected>cards-data-test.js</option>
+    <option value="cards-data.js">cards-data.js</option>
+  </select>
+  <select id="keySelect" title="Name key">
+    <option value="gameName" selected>gameName</option>
+    <option value="name">name</option>
+  </select>
+  <label><input type="checkbox" id="stripParens" />strip ( ... )</label>
+  <input id="nameOverride" placeholder="optional name override" />
+  <button id="authBtn" class="tag">Sign in</button>
+</div>
+<a href="index.html" class="logo">StrongDog<span class="xp">XP</span></a>
+<div class="search-container">
+<input id="searchInput" class="search-bar" placeholder="Search…" autocomplete="off"/>
+<div id="searchResults" class="search-results"></div>
+</div>
+</div>
+<aside id="drawer" class="drawer">
+<a href="index.html">Home</a>
+<a href="test.html">Moderate (Test)</a>
+<a href="secret-menu.html">Secret</a>
+</aside>
+<div id="overlay" class="overlay"></div>
+<div id="loader" class="loader">Loading games…</div>
+<div id="busy" class="busy"><div class="spinner" aria-label="Loading"></div></div>
+<div id="banner" class="banner"></div>
+<h2 style="text-align:center;margin:10px 0"><strong>All</strong></h2>
+<div id="allGame" class="games-grid"></div>
+</body>
 </html>

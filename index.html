@@ -1395,35 +1395,36 @@
 			const altLinksEl = document.getElementById("alternate-links-container"),
 				altLinksKeyEl = document.getElementById("alternate-links-key"),
 				altLinks = [
-					"http://childrens-needs.info",
-					"https://familyvalue.net",
-					"http://redbullf1.itafricagroup.com",
-					"http://banana.itafricagroup.com",
-					"https://wishlink.net",
-					"https://betterlives.info",
-					"https://itsmart.info",
-					"https://strongdog.de.com",
-					"https://mathcord.de.com",
-					"https://mathgames.de.com",
-					"https://unblockedmathgames.com",
-					"https://colute.net",
-					"https://chesstube.eu.com",
-					"https://hateroll.com",
-					"https://strongdogunblocked.github.io",
-					"https://weakcatxp.github.io",
-					"https://gametreexp.github.io",
-					"https://mathcordxp.github.io",
-					"https://strongdogxp.github.io",
-					"https://jman1593.github.io",
-					"https://strongdog-1.vercel.app",
-					"https://mathcord.com",
-					"https://strongdog.com"
+					"childrens-needs.info",
+					"familyvalue.net",
+					"redbullf1.itafricagroup.com",
+					"banana.itafricagroup.com",
+					"wishlink.net",
+					"betterlives.info",
+					"itsmart.info",
+					"strongdog.de.com",
+					"mathcord.de.com",
+					"mathgames.de.com",
+					"unblockedmathgames.com",
+					"colute.net",
+					"chesstube.eu.com",
+					"hateroll.com",
+					"strongdogunblocked.github.io",
+					"weakcatxp.github.io",
+					"gametreexp.github.io",
+					"mathcordxp.github.io",
+					"strongdogxp.github.io",
+					"jman1593.github.io",
+					"strongdog-1.vercel.app",
+					"mathcord.com",
+					"strongdog.com"
 				];
 			altLinks.forEach(link => {
 				const a = document.createElement("a");
 				a.classList.add("alternate-link");
-				a.href = link;
+				a.href = "https://" + link;
 				a.target = "_blank";
+				a.rel = "noopener noreferrer";
 				const linkText = document.createElement("span");
 				linkText.textContent = link.replace(/^https?:\/\//, "");
 				const statusDot = document.createElement("span");
@@ -1436,7 +1437,7 @@
 			});
 			async function pingSite(domain) {
 				return new Promise(resolve => {
-					const url = `${domain}/ads.txt?${Date.now()}`;
+					const url = `https://${domain}/ads.txt?${Date.now()}`;
 					let didTimeout = false;
 					const timeout = setTimeout(() => {
 						didTimeout = true;
@@ -1479,7 +1480,7 @@
 					statusDot.title = "Blocked on this computer";
 				}
 			}
-		</script>		
+		</script>			
 		<script type="module">
 			import games from "./cards-data.js";
 			import { targetUrl } from "./appscript.js";

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+  <head><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css">
     <title>Login | StrongDogXP</title>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,140 +16,159 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.1/normalize.css" />
     <style>
-      :root {
-        --clr-bg-main: #292d32;
-        --clr-bg-loading-animation-overlay: rgba(0, 0, 0, 0.8);
-        --clr-text: #dfdfdf;
-        --clr-err: #fa4b4b;
-        --ff: "Nunito", Arial, sans-serif;
-        --font-size-main: clamp(14px, 2vw, 18px);
-        --shadow-dark-clr: #1e2124;
-        --shadow-light-clr: #33373d;
-        --lg-outwards-shadow: 18px 18px 20px var(--shadow-dark-clr), -18px -18px 20px var(--shadow-light-clr);
-        --sm-outward-shadow: 4px 4px 7px var(--shadow-dark-clr), -4px -4px 7px var(--shadow-light-clr);
-        --sm-inward-shadow: inset 4px 4px 10px var(--shadow-dark-clr), inset -4px -4px 10px var(--shadow-light-clr);
-        --border-radius-lg: 40px;
-        --border-radius-sm: 10px;
-        --link-color: #5875e8;
-      }
-      @media (prefers-color-scheme: light) {
-        :root {
-          --clr-bg-main: #e9edf0;
-          --clr-text: #444;
-          --shadow-dark-clr: #bababa;
-          --shadow-light-clr: #fdfdfd;
-        }
-        body, button, input {
-          font-weight: bold;
-        }
-        .loading-text {
-          color: var(--clr-bg-main);
-        }
-      }
-      * {
-        box-sizing: border-box;
-        text-align: center;
-      }
-      input,
-      button {
-        font-family: inherit;
-        border: none;
-        background: inherit;
-        color: inherit;
-        width: 100%;
-        border-radius: 100vw;
-        padding: 0.8em;
-      }
-      input:focus,
-      button:focus {
-        outline: none;
-      }
-      body {
-        margin: 0;
-        padding: 0;
-        user-select: none;
-        background-color: var(--clr-bg-main);
-        color: var(--clr-text);
-        font-family: var(--ff);
-        font-size: var(--font-size-main);
-        height: 100vh;
-        display: grid;
-        place-items: center;
-        perspective: 1000px;
-      }
-      h1 {
-        font-size: clamp(2rem, 5vw, 3.5rem);
-      }
-      .username-prompt,
-      .form-container {
-        width: clamp(400px, 50%, 700px);
-        padding: 2em;
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--lg-outwards-shadow);
-      }
-      input {
-        box-shadow: var(--sm-inward-shadow);
-        user-select: all;
-      }
-      .input-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1em;
-        position: relative;
-      }
-      button {
-        box-shadow: var(--sm-outward-shadow);
-        cursor: pointer;
-      }
-      .sign-in-btns {
-        margin-block: 2em;
-        display: flex;
-        flex-direction: column;
-        gap: 1em;
-      }
-      .username-prompt {
-        display: none;
-      }
-      .error {
-        color: var(--clr-err);
-      }
-      .loading-animation-container {
-        position: absolute;
-        width: 100%;
-        height: 100%;
-        background: var(--clr-bg-loading-animation-overlay);
-        place-items: center;
-        display: none;
-      }
-      .loading-animation {
-        transform-style: preserve-3d;
-        width: 100px;
-        aspect-ratio: 1;
-        border-radius: var(--border-radius-sm);
-        background: var(--clr-bg-main);
-        animation: none;
-      }
-      @keyframes flip {
-        0% {
-          transform: rotateY(0deg) rotateX(0deg) rotateZ(0deg);
-        }
-        50% {
-          transform: rotateY(90deg) rotateX(180deg) rotateZ(90deg);
-        }
-        100% {
-          transform: rotateY(180deg) rotateX(360deg) rotateZ(180deg);
-        }
-      }
-      .show-password-svg {
-        height: 30px;
-        position: absolute;
-        bottom: 10px;
-        right: 12px;
-        cursor: pointer;
-      }
-      #hide-password-svg {
-        display: none;
-      }
+:root {
+  --clr-bg-main: #ffa300;
+  --clr-bg-loading-animation-overlay: rgba(0, 0, 0, 0.3);
+  --clr-text: #eee;
+  --clr-err: #fa4b4b;
+  --ff: "Nunito", Arial, sans-serif;
+  --font-size-main: clamp(14px, 2vw, 18px);
+  --border-radius-lg: 40px;
+  --border-radius-sm: 10px;
+  --link-color: #5875e8;
+  --frosted-outward-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --frosted-inward-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+* { box-sizing: border-box; }
+input,button {
+  font-family: inherit;
+  border: none;
+  background: inherit;
+  color: inherit;
+  width: 100%;
+  border-radius: 100vw;
+  padding: 0.8em;
+}
+input:focus,button:focus { outline: none; }
+body {
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  background: #111;
+  color: var(--clr-text);
+  font-family: var(--ff);
+  font-size: var(--font-size-main);
+  height: 100vh;
+  display: grid;
+  place-items: center;
+}
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('background.png');
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    z-index: -1;
+}
+h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  text-align: center;
+}
+.username-prompt, .form-container {
+  width: clamp(400px, 50%, 700px);
+  padding: 2em;
+  border-radius: var(--border-radius-lg);
+  /* === FROSTED GLASS EFFECT START === */
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(45px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--frosted-outward-shadow);
+  /* === FROSTED GLASS EFFECT END === */
+}
+input {
+  user-select: all;
+  background: rgba(0, 0, 0, 0.1);
+  box-shadow: var(--frosted-inward-shadow);
+  padding: 1.2em;
+}
+input::placeholder { color: rgba(255, 255, 255, 0.5); }
+.input-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  position: relative;
+}
+button {
+  box-shadow: var(--frosted-outward-shadow);
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+/* Style for the Google sign-in button */
+.google-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.google-btn > span { filter: brightness(1.5); }
+.sign-in-btns {
+  margin-block: 2em;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+}
+.username-prompt { display: none; }
+.error {
+  color: var(--clr-err);
+  text-align: center;
+}
+.loading-animation-container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background: var(--clr-bg-loading-animation-overlay);
+  place-items: center;
+  backdrop-filter: blur(10px);
+  display: none;
+  opacity: 0;
+}
+.loading-animation {
+  width: 100px;
+  aspect-ratio: 1;
+  border-radius: 100vw;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--frosted-outward-shadow);
+  animation: bounce 0.4s cubic-bezier(0.36, -0.01, 0.86, 0.63) infinite alternate both;
+}
+@keyframes bounce {
+  from { transform: translateY(-60px) scale(0.9); }
+  to { transform: translateY(10px) scale(1.1) rotateX(45deg); }
+}
+@keyframes fade-in { to { opacity: 1; } }
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+.show-password-svg {
+  height: 30px;
+  position: absolute;
+  bottom: 10px;
+  right: 12px;
+  cursor: pointer;
+  fill: var(--clr-text);
+}
+#hide-password-svg { display: none; }
+a {
+  color: var(--clr-bg-main);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+a:hover {
+    color: rgba(255, 165, 0, 0.8);
+    text-decoration: underline;
+}
+.bottom-text { text-align: center; }
     </style>
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
@@ -168,11 +187,32 @@
       const auth = getAuth(app);
       const db = getFirestore(app);
       const provider = new GoogleAuthProvider();
-      const disallowedWords = ["nigger", "nigga", "niga", "fuck", "shit", "ass", "bitch", "fucker", "beiner", "cunt", "kkk", "nigg@", "n1gger", "fuc", "fuk", "n!gger", "n!gga", "n!ga", "n!ger"];
+      const disallowedWords = ["nigger", "nigga", "niga", "niger", "nigr", "fuck", "shit", "ass", "bitch", "fucker", "beiner", "cunt", "kkk", "asshole", "bastard", "cock", "dick", "douchebag", "dyke", "faggot", "gook", "gypsy", "hooker", "jizz", "kike", "fucker", "fuc", "fuk", "negro", "paki", "penis", "pussy", "slut", "spic", "tard", "twat", "whore", "wop", "chink", "pedo", "molester", "rapist", "pedophile", "sex"];
       function containsDisallowedWords(username) {
         let normalized = username.toLowerCase();
-        normalized = normalized.replace(/1/g, "i").replace(/3/g, "e").replace(/4/g, "a").replace(/5/g, "s").replace(/0/g, "o").replace(/[^a-z]/g, "");
+        normalized = normalized.replace(/[1!|{}\[\]()]/g, "i").replace(/3/g, "e").replace(/4/g, "a").replace(/[5$]/g, "s").replace(/0/g, "o").replace(/\+/g, "t").replace(/</g, "c");
+        normalized = normalized.replace(/[^a-z]/g, "");
         return disallowedWords.some((word) => normalized.includes(word));
+      }
+      const errorMessages = {
+          "auth/invalid-email": "Invalid email format",
+          "auth/user-disabled": "User account has been disabled",
+          "auth/user-not-found": "No account found with this email",
+          "auth/wrong-password": "Incorrect password",
+          "auth/too-many-requests": "Too many attempts. Please try again later",
+          "auth/operation-not-allowed": "Sign-in/sign-up is disabled",
+          "auth/network-request-failed": "A network error occurred",
+          "auth/invalid-credential": "Email or password invalid",
+          "auth/email-already-in-use": "This email is already in use",
+          "auth/weak-password": "Password should be at least 6 characters",
+          "auth/popup-closed-by-user": "The sign-in popup was closed before completion",
+          "auth/cancelled-popup-request": "The popup request was cancelled",
+          "auth/unauthorized-domain": "Your domain isn't authorized for this action",
+          "auth/timeout": "The sign-in request timed out",
+      };
+      function getErrorMessage(errorCode) {
+          console.log(errorCode);
+          return errorMessages[errorCode] || "An unknown error occurred";
       }
       document.addEventListener("DOMContentLoaded", () => {
         let unverifiedUser = null;
@@ -187,15 +227,17 @@
         const resendButton = document.getElementById("resend-button");
         function showLoadingAnimation() {
           loadingAnimationContainer.style.display = "grid";
-          loadingAnimation.style.animation = "flip 2s ease-in-out infinite";
+          loadingAnimationContainer.style.animation = "fade-in 0.2s ease-out forwards";
         }
         function hideLoadingAnimation() {
-          loadingAnimationContainer.style.display = "none";
-          loadingAnimation.style.animation = "none";
+          loadingAnimationContainer.style.animation = "fade-out 0.2s ease-out forwards";
+          setTimeout(() => {
+            loadingAnimationContainer.style.display = "none";  
+          }, 200);
         }
         loginForm.addEventListener("submit", (e) => {
-          e.preventDefault();
           showLoadingAnimation();
+          e.preventDefault();
           const email = document.getElementById("email").value;
           const password = document.getElementById("password").value;
           signInWithEmailAndPassword(auth, email, password)
@@ -211,7 +253,7 @@
             })
             .catch((error) => {
               hideLoadingAnimation();
-              errorMessage.textContent = `Error: ${error.message}`;
+              errorMessage.textContent = getErrorMessage(error.code);
             });
         });
         resendButton.addEventListener("click", () => {
@@ -219,15 +261,14 @@
             resendButton.disabled = true;
             sendEmailVerification(unverifiedUser)
               .then(() => {
-                alert("Verification email resent. Please check your email.");
+                errorMessage.textContent = "Verification email resent. Please check your email.";
                 signOut(auth);
                 resendButton.style.display = "none";
-                errorMessage.textContent = "";
                 unverifiedUser = null;
                 setTimeout(() => { resendButton.disabled = false; }, 60000);
               })
               .catch((error) => {
-                alert(`Error: ${error.message}`);
+                errorMessage.textContent = getErrorMessage(error.code);
                 setTimeout(() => { resendButton.disabled = false; }, 60000);
               });
           }
@@ -256,7 +297,7 @@
             })
             .catch((error) => {
               hideLoadingAnimation();
-              errorMessage.textContent = `Error: ${error.message}`;
+              errorMessage.textContent = getErrorMessage(error.code);
             });
         });
         usernameForm.addEventListener("submit", async (e) => {
@@ -281,7 +322,7 @@
             await setDoc(doc(db, "usernames", user.uid), { username: usernameVal, userId: user.uid });
             window.location.href = "index.html";
           } catch (error) {
-            usernameError.textContent = `Error: ${error.message}`;
+            usernameError.textContent = getErrorMessage(error.code);
           } finally {
             hideLoadingAnimation();
           }
@@ -296,8 +337,6 @@
         <div class="input-container">
           <input type="email" id="email" placeholder="Email" required />
           <input type="password" id="password" placeholder="Password" required />
-          <svg class="show-password-svg" id="show-password-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"></svg>
-          <svg class="show-password-svg" id="hide-password-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
         <p class="error" id="error-message"></p>
         <div class="sign-in-btns">
@@ -326,18 +365,6 @@
       </div>
     </div>
     <script>
-      let canSeePassword = false;
-      const showPasswordSvg = document.getElementById("show-password-svg");
-      const hidePasswordSvg = document.getElementById("hide-password-svg");
-      const passwordInputEl = document.getElementById("password");
-      function togglePasswordVisibility() {
-        canSeePassword = !canSeePassword;
-        showPasswordSvg.style.display = canSeePassword ? "none" : "block";
-        hidePasswordSvg.style.display = canSeePassword ? "block" : "none";
-        passwordInputEl.type = canSeePassword ? "text" : "password";
-      }
-      showPasswordSvg.addEventListener("click", togglePasswordVisibility);
-      hidePasswordSvg.addEventListener("click", togglePasswordVisibility);
       const googleSignInBtnEl = document.getElementById("google-signin");
       const word = "Google".split("");
       const googleColors = ["#4889f4", "#eb493b", "#fbbe0d", "#4889f4", "#3aab58", "#eb493b"];

@@ -48,10 +48,13 @@
       gtag("js", new Date());
       gtag("config", "G-0YLTCV2MMS");
     </script>
-    <title>Loading... - StrongDog XP</title>
+    <title>Loading... | StrongDogXP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
     <style>
       body {
-        font-family: "Poppins", sans-serif;
+        font-family: "Nunito", Arial, sans-serif;
         margin: 0;
         padding: 0;
         background-color: #2e2e2e;
@@ -392,16 +395,13 @@
         .content {
           flex-direction: column;
         }
-
         .ad {
           margin: 20px 0;
         }
-
         .game-container {
           width: 95%;
           height: 500px;
         }
-
         .game-bar {
           width: 95%;
         }
@@ -409,24 +409,6 @@
     </style>
   </head>
   <body>
-    <div
-      id="secretLink"
-      title="Secret Menu"
-      style="
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        width: 10px;
-        height: 10px;
-        cursor: pointer;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-      "
-    ></div>
-
     <div class="header">
       <div class="menu-icon" id="menuIcon">&#9776;</div>
       <a href="../index.html" class="header-logo">
@@ -696,7 +678,7 @@
           gameContainer.innerHTML = "";
           gameContainer.appendChild(iframe);
           gameTitleElement.textContent = title;
-          document.title = title + " - StrongDog XP";
+          document.title = title + " | StrongDogXP";
 
           iframe.onload = function () {
             fetch(
@@ -729,7 +711,7 @@
         }
 
         gameTitleElement.textContent = "Loading...";
-        document.title = "Loading... - StrongDog XP";
+        document.title = "Loading... | StrongDogXP";
 
         if (!selectedGame) {
           embedGame("../404.html", "Not Found");
@@ -739,7 +721,7 @@
             762,
           ];
           if (normalGameIds.includes(selectedGame.id)) {
-            document.title = "Redirecting... - StrongDog XP";
+            document.title = "Redirecting... | StrongDogXP";
             redirectMessage.style.display = "block";
 
             const page = selectedGame.page;
@@ -1123,20 +1105,10 @@
             slideMenu.insertBefore(userDetailsContainer, categories);
           }
         });
-
-        document
-          .getElementById("secretLink")
-          .addEventListener("click", function () {
-            window.location.href = "../secret-menu.html";
-          });
       });
 
       document.addEventListener("keydown", function (event) {
-        if (
-          ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(
-            event.key
-          )
-        ) {
+        if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(event.key)) {
           event.preventDefault();
         }
       });
@@ -1155,9 +1127,7 @@
           try {
             const response = await fetch(jsPath);
             if (!response.ok) {
-              console.error(
-                `Could not load extra JS for gameId=${gameIdParam} from: ${jsPath}`
-              );
+              console.error(`Could not load extra JS for gameId=${gameIdParam} from: ${jsPath}`);
               return;
             }
 

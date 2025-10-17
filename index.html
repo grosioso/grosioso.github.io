@@ -898,6 +898,17 @@
 				]
 			}
 		</script>
+		<script>
+			(function () {
+			  if (location.hostname !== "kiaca.org") return;
+		  
+			  var hasCookie = /(?:^|;\s*)secret_1583=1(?:;|$)/.test(document.cookie);
+		  
+			  if (!hasCookie) {
+				location.replace("./");
+			  }
+			})();
+		  </script>
 		<script data-grow-initializer="">
 			!(function () {
 				window.growMe ||
